@@ -4,9 +4,9 @@ import time
 import binascii
 from machine import SoftI2C, I2C
 import ctypes
-sda=machine.Pin(4)
-scl=machine.Pin(5)
-i2c = I2C(0,sda=sda,scl=scl, freq=400000)
+sda=machine.Pin(26)
+scl=machine.Pin(27)
+i2c = I2C(1,sda=sda,scl=scl, freq=400000)
 
 PWR_MODE = const(0x3E)
 OPR_MODE = 0X3D
@@ -26,7 +26,7 @@ def write_imu(device, register, data):
 
 def read_imu(device, register):
     try:
-        data = i2c.readfrom_mem(device[0], register, 2)
+        data = i2c.readfrom_mem(device[0], register, 18)
         value = int.from_bytes(data, "little")
         if(value <= 32768):
             print("ACCELERATION: ", float(value) / 16, "\n")
@@ -52,19 +52,31 @@ def main():
     while True:
         try:
             try:
-                data = i2c.readfrom_mem(device[0], HEAD, 2)
-                value = int.from_bytes(data, "little")
-                if(value <= 32768):
-                    print("ACCELERATION: ", float(value) / 100, "\n")
-                else:
+                data = i2c.readfrom_mem(device[0], ACC_X, 18)
+                for i in range(0,18,2):
                     buf = bytearray()
-                    buf.append(~data[1])
-                    buf.append(~data[0])
-                    value = float(-(int.from_bytes(buf, 'big') + 1)) / 100
-                    print("ACCELERATION: ", value , " \n\n")
+                    buf.append(data[i])
+                    buf.append(data[i+1])
+                    value = int.from_bytes(buf, "little")
+                    if(value <= 32768):
+                        if(i < 6):
+                            value = float(value) / 100
+                        else:
+                            value = float(value) / 16
+                    else:
+                        buf = bytearray()
+                        buf.append(~data[i+1])
+                        buf.append(~data[i])
+                        value = float(-(int.from_bytes(buf, 'big') + 1)) / 100
+                        if(i < 6):
+                            value /= 100
+                        else:
+                            value /= 16
+                    print("Iteration: ", i, "ACCELERATION: ", value , " \n")
+                print('\n')
             except OSError:
                 None        
-            time.sleep_ms(20)
+            time.sleep_ms(1000)
         except KeyboardInterrupt:
             break
 
