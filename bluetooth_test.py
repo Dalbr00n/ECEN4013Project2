@@ -3,6 +3,9 @@ import time
 
 uart0 = UART(0, 9600,  tx=machine.Pin(16), rx = machine.Pin(17))
 uart0.write("Welcome to void loop Robot \r\n")
+
+led = Pin(15, Pin.OUT)
+
 print("Hello Console")
 i = 0
 
@@ -13,5 +16,6 @@ while True:
     iSTR = str(i)
     uart0.write(iSTR)
     uart0.write( "\r\n" )
+    led.toggle()
     time.sleep(1)
             
