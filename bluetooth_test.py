@@ -1,7 +1,7 @@
 from machine import Pin, UART
 import time
 
-uart0 = UART(0, 9600)
+uart0 = UART(0, 9600,  tx=machine.Pin(16), rx = machine.Pin(17))
 uart0.write("Welcome to void loop Robot \r\n")
 print("Hello Console")
 i = 0
